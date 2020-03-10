@@ -6,7 +6,7 @@ run: sudolisp
 dbg: sudolisp
 	- gdb ./sudolisp 
 
-sudolisp: sudolisp.cpp mpc.o
+sudolisp: sudolisp.cpp impl.h console-io.h mpc.o
 	g++ -g -Wall -o sudolisp sudolisp.cpp mpc.o -ledit
 
 mpc.o: ./mpc/mpc.h ./mpc/mpc.c
