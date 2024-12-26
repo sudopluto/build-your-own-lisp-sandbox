@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "console-io.h"
+#include "console/console.h"
 #include "impl.h"
 
 int main(int argc, char** argv) {
@@ -15,6 +15,7 @@ int main(int argc, char** argv) {
 
     bool run = true;
     while(run) {
+        input.clear();
         bool valid_input = console_getinput(input, "sudolisp> ");
         // handle bad input
         if (!valid_input) {

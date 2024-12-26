@@ -41,18 +41,19 @@ public:
         }
     }
 
-    void parse(const std::string& input, bool print = false) {
+    void parse(const std::string& input) {
         mpc_result_t r;
+        if (Ast) {
+            mpc_ast_delete((Ast));
+            Ast = nullptr;
+        }
+
         if (mpc_parse("<stdin>", input.c_str(), Lispy, &r)) {
-            if (print) {
-                mpc_ast_print((mpc_ast_t*)r.output);
-            }
             Ast = (mpc_ast_t*)r.output;
         }
         else {
             mpc_err_print(r.error);
             mpc_err_delete(r.error);
-            Ast = nullptr;
         }
     }
 
