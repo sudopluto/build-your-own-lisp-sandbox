@@ -9,7 +9,7 @@ dbg: sudolisp
 dbg-mem: sudolisp
 	- valgrind --leak-check=full --show-leak-kinds=all ./sudolisp
 
-sudolisp: sudolisp.cpp impl.h types.h console.o mpc.o
+sudolisp: sudolisp.cpp parser.h eval.h types.h console.o mpc.o
 	g++ -Wall -g -o sudolisp sudolisp.cpp mpc.o console.o
 
 mpc.o: ./mpc/mpc.h ./mpc/mpc.c
