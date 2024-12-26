@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 
-#include "mpc/mpc.h"
 #include "console-io.h"
 #include "impl.h"
 
@@ -29,7 +28,7 @@ int main(int argc, char** argv) {
         }
         // got some input, parse and evaluate
         else {
-           p.parse(input, true); 
+           p.parse(input);
            e.eval(p.yield_ast(), output);
            std::cout << output << std::endl;
         }

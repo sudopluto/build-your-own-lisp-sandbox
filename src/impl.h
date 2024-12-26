@@ -1,9 +1,12 @@
 #pragma once
 
+#include <sstream>
 #include <string>
 #include <string.h>
 #include <math.h>
 #include "mpc/mpc.h"
+
+#include "types.h"
 
 class Parser {
     mpc_parser_t* Number;
@@ -11,7 +14,7 @@ class Parser {
     mpc_parser_t* Expr;
     mpc_parser_t* Lispy;
 
-    mpc_ast_t* Ast; 
+    mpc_ast_t* Ast;
 
 public:
     Parser() : Ast(nullptr) {
@@ -41,7 +44,7 @@ public:
     void parse(const std::string& input, bool print = false) {
         mpc_result_t r;
         if (mpc_parse("<stdin>", input.c_str(), Lispy, &r)) {
-            if (print) { 
+            if (print) {
                 mpc_ast_print((mpc_ast_t*)r.output);
             }
             Ast = (mpc_ast_t*)r.output;
@@ -50,13 +53,13 @@ public:
             mpc_err_print(r.error);
             mpc_err_delete(r.error);
             Ast = nullptr;
-        }   
+        }
     }
 
     // temporary, as I don't really feel like writing a wrapper around ast
     // parser owns the memory for this, do not call delete / modify
     const mpc_ast_t* yield_ast() {
-        return Ast;         
+        return Ast;
     }
 };
 
@@ -64,31 +67,46 @@ public:
 class Evaluator {
 private:
 
-    long eval_impl_op(char* op, long x, long y) {
-        if (strcmp(op, "+") == 0) {return x + y;}
-        else if (strcmp(op, "-") == 0) {return x - y;}
-        else if (strcmp(op, "*") == 0) {return x * y;}
-        else if (strcmp(op, "/") == 0) {return x / y;}
-        else if (strcmp(op, "%") == 0) {return x % y;}
-        else if (strcmp(op, "^") == 0) {return pow(x, y);}
-        else if (strcmp(op, "min") == 0) {return (x < y) ? x : y;}
-        else if (strcmp(op, "max") == 0) {return (x > y) ? x : y;}
-        else {return x;}
+    LispValue eval_impl_op(char* op, LispValue l, LispValue r) {
+
+        if (l.get_type() == LispValue::ValueType::lerr) {return l;}
+        if (r.get_type() == LispValue::ValueType::lerr) {return r;}
+
+        // must be value now
+
+        if (strcmp(op, "+") == 0) {return LispValue(l.get_value() + r.get_value());}
+        else if (strcmp(op, "-") == 0) {return l.get_value() - r.get_value();}
+        else if (strcmp(op, "*") == 0) {return l.get_value() * r.get_value();}
+        else if (strcmp(op, "/") == 0) {
+            if (r.get_value() == 0) {
+                return LispValue(LispValue::ErrorType::lerr_div_by_zero);
+            } else {
+                return l.get_value() / r.get_value();
+            }
+        }
+        else if (strcmp(op, "%") == 0) {return l.get_value() % r.get_value();}
+        else if (strcmp(op, "^") == 0) {return pow(l.get_value(), r.get_value());}
+        else if (strcmp(op, "min") == 0) {return (l.get_value() < r.get_value()) ? l.get_value() : r.get_value();}
+        else if (strcmp(op, "max") == 0) {return (l.get_value() > r.get_value()) ? l.get_value() : r.get_value();}
+        else {return LispValue(LispValue::ErrorType::lerr_bad_op);}
     }
 
-    long eval_impl(const mpc_ast_t* ast) {
+    LispValue eval_impl(const mpc_ast_t* ast) {
         if (strstr(ast->tag, "number")) {
-            return atol(ast->contents);
+            std::stringstream ss(ast->contents);
+            long ret;
+            ss >> ret;
+            return !ss.fail() ? LispValue(ret) : LispValue(LispValue::ErrorType::lerr_bad_num);
         }
         else {
             char* op = ast->children[1]->contents;
-            long x = eval_impl(ast->children[2]);
+            LispValue l = eval_impl(ast->children[2]);
             int i = 3;
             while (strstr(ast->children[i]->tag, "expr")) {
-                x = eval_impl_op(op, x, eval_impl(ast->children[i]));
+                l = eval_impl_op(op, l, eval_impl(ast->children[i]));
                 ++i;
             }
-            return x;
+            return l;
         }
     }
 
@@ -97,7 +115,12 @@ public:
     void eval(const mpc_ast_t* ast, std::string& output) {
         output.clear();
         if (ast) {
-            output.append(std::to_string(eval_impl(ast)));
+            LispValue eval_final = eval_impl(ast);
+            if (eval_final.get_type() == LispValue::ValueType::lval) {
+                output.append(std::to_string(eval_final.get_value()));
+            } else {
+                eval_final.print();
+            }
         }
     }
 };
