@@ -1,0 +1,15 @@
+sudolisp v1
+press ctl-c or type "quit" to exit
+
+sudolisp> 3
+sudolisp> -1
+sudolisp> 2
+sudolisp> 2
+sudolisp> 1
+sudolisp> 8
+sudolisp> 2
+sudolisp> 3
+sudolisp> Error: Can't Divide by Zero!
+
+sudolisp> 
+exiting...
