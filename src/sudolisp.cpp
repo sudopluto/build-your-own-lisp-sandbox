@@ -1,9 +1,9 @@
 #include <iostream>
 #include <string>
 
-#include "console/console.h"
-#include "parser.h"
-#include "eval.h"
+#include "./console/console.h"
+#include "./parser/parser.h"
+#include "./evaluator/eval.h"
 
 int main(int argc, char** argv) {
     std::cout << "sudolisp v1" << std::endl;

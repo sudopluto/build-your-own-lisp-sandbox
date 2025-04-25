@@ -5,8 +5,9 @@
 #include <string.h>
 #include <math.h>
 
-#include "types.h"
-#include "mpc/mpc.h"
+#include "../types/types.h"
+// TODO: typedef away mpc types so evaluator doesnt' know about mpc
+#include "../parser/mpc/mpc.h"
 
 class Evaluator {
 private:
